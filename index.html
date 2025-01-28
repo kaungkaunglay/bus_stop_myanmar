@@ -57,11 +57,11 @@
 
     <script>
         let busStops = [];
-
+    
         // Load bus stop data from the URL
         const jsonFilePath = 'https://api.jsonsilo.com/public/eb13106b-87ea-4712-9024-c818435d4615'; // URL to your JSON file
         const dataStatus = document.getElementById('dataStatus');
-
+    
         // Fetch the JSON file
         fetch(jsonFilePath)
             .then(response => response.json())
@@ -81,7 +81,7 @@
                     lat: record[10],
                     lng: record[11]
                 }));
-
+    
                 dataStatus.innerHTML = 'Bus stop data loaded successfully!';
                 dataStatus.className = 'location-status success';
                 
@@ -92,7 +92,7 @@
                 dataStatus.innerHTML = 'Error loading bus stop data: ' + error.message;
                 dataStatus.className = 'location-status error';
             });
-
+    
         // Calculate distance between two points using the Haversine formula
         function calculateDistance(lat1, lon1, lat2, lon2) {
             const R = 6371; // Earth's radius in kilometers
@@ -105,14 +105,14 @@
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             return R * c;
         }
-
+    
         // Find nearest bus stop
         function findNearestStop(userLat, userLng) {
             if (busStops.length === 0) return null;
-
+    
             let nearestStop = null;
             let shortestDistance = Infinity;
-
+    
             busStops.forEach(stop => {
                 const distance = calculateDistance(userLat, userLng, stop.lat, stop.lng);
                 if (distance < shortestDistance) {
@@ -120,10 +120,10 @@
                     nearestStop = { ...stop, distance };
                 }
             });
-
+    
             return nearestStop;
         }
-
+    
         // Update the UI with the nearest stop information
         function updateNearestStopUI(stop) {
             const nearestStopDiv = document.getElementById('nearestStop');
@@ -142,35 +142,42 @@
                 </div>
             `;
         }
-
+    
         // Track user's location
         function trackLocation() {
             const statusDiv = document.getElementById('locationStatus');
-
+    
             if (!navigator.geolocation) {
                 statusDiv.innerHTML = 'Geolocation is not supported by your browser';
                 statusDiv.className = 'location-status error';
                 return;
             }
-
+    
             function success(position) {
                 const latitude = position.coords.latitude;
                 const longitude = position.coords.longitude;
-
+    
                 statusDiv.innerHTML = `Location found!`;
                 statusDiv.className = 'location-status success';
-
+    
                 const nearestStop = findNearestStop(latitude, longitude);
                 updateNearestStopUI(nearestStop);
             }
-
+    
             function error() {
                 statusDiv.innerHTML = 'Unable to retrieve your location';
                 statusDiv.className = 'location-status error';
             }
-
+    
             statusDiv.innerHTML = 'Locating...';
-            navigator.geolocation.watchPosition(success, error);
+    
+            const options = {
+                maximumAge: 10000, // 10 seconds
+                timeout: 3000, // 5 seconds
+                enableHighAccuracy: true
+            };
+    
+            navigator.geolocation.watchPosition(success, error, options);
         }
     </script>
 </body>
